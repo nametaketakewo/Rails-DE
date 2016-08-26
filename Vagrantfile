@@ -57,7 +57,7 @@ Vagrant.configure(2) do |config|
   echo '#!/bin/bash\n\ncd /app\n/usr/local/bin/docker-compose run app bundle exec rake db:migrate' > /usr/local/bin/migrate
   echo '#!/bin/bash\n\ncd /app\n/usr/local/bin/docker-compose up' > /usr/local/bin/server
   echo '#!/bin/bash\n\ncd /app\n/usr/local/bin/bundle-install\n/usr/local/bin/migrate\n/usr/local/bin/server' > /usr/local/bin/run
-  echo '#!/bin/bash\n\ndocker exec -it `docker ps |grep vagrant_app | awk '\''{print $1}'\''` bash' > /usr/local/bin/connect
+  echo "#!/bin/bash\n\ndocker exec -it "'\`'"docker ps |grep vagrant_app | awk '{print "'\$1'"}'"'\`'" bash" > /usr/local/bin/connect
   chmod +x /usr/local/bin/bundle-install
   chmod +x /usr/local/bin/bundle-update
   chmod +x /usr/local/bin/setup
