@@ -38,6 +38,7 @@ Vagrant.configure(2) do |config|
   cd /app
   /usr/local/bin/docker-compose build
   if [ ! -d '/app/app' ] && [ ! -f '/app/Gemfile' ]; then
+    rm -rf /app/.git
     /usr/local/bin/docker-compose run app rails new . -f -d mysql
   elif [ ! -f '/app/Gemfile' ] ; then
     echo 'source '\''https://rubygems.org'\''\n\ngem '\''rails'\'', '\''~> 5.0.0'\' > /app/Gemfile
