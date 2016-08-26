@@ -33,18 +33,58 @@ Vagrant.configure(2) do |config|
   chmod +x /usr/local/bin/docker-compose
   SHELL
 
+  app_name = 'app'
+  app_name = (Dir::pwd).split('/')[-1] if (Dir::pwd).split('/')[-1] != 'Rails-DE'
+  app_name = ENV['APP_NAME'].split(' ')[0] if ENV['APP_NAME'] && ENV['APP_NAME'] != '.'
+
+  db = 'mysql'
+  if ENV['APP_DB'] == 'sqlite' || ENV['APP_DB'] == 'sqlite3'
+    db = 'sqlite3'
+  elsif ENV['APP_DB'] == 'postgres' || ENV['APP_DB'] == 'postgresql'
+    db = 'postgresql'
+  end
+
+  require 'yaml'
+  file = YAML.load_file('docker-compose.yml')
+
+  if ENV['EXCLUDE_REDIS'] == 'yes' || ENV['EXCLUDE_REDIS'] == 'true'
+    file['services']['app']['links'].delete('redis')
+    file['services'].delete('redis')
+  end
+
+  if db == 'mysql'
+    file['services']['app']['links'].delete('postgres')
+    file['services'].delete('postgres')
+  elsif db == 'postgresql'
+    file['services']['app']['links'].delete('mariadb')
+    file['services'].delete('mariadb')
+  elsif db == 'sqlite3'
+    file['services']['app']['links'].delete('postgres')
+    file['services'].delete('postgres')
+    file['services']['app']['links'].delete('mariadb')
+  file['services'].delete('mariadb')
+  end
+
+  open('docker-compose.yml',"w") do |f|
+    YAML.dump(file,f)
+  end
+
   config.vm.provision 'shell', inline: <<-SHELL
   ln -s /vagrant /app
   cd /app
   /usr/local/bin/docker-compose build
   if [ ! -d '/app/app' ] && [ ! -f '/app/Gemfile' ]; then
-    rm -rf /app/.git
-    /usr/local/bin/docker-compose run app rails new . -f -d mysql
+  rm -rf /app/.git
+  /usr/local/bin/docker-compose run app gem install rails
+  /usr/local/bin/docker-compose run app rails new t/#{app_name} -d #{db}
+  mv /app/t/#{app_name}/* /app/
+  mv /app/t/#{app_name}/.* /app/
+  rm -rf /app/t/
   elif [ ! -f '/app/Gemfile' ] ; then
-    echo 'source '\''https://rubygems.org'\''\n\ngem '\''rails'\'', '\''~> 5.0.0'\' > /app/Gemfile
+  echo 'source '\''https://rubygems.org'\''\n\ngem '\''rails'\'', '\''~> 5.0.0'\' > /app/Gemfile
   fi
-  sed -ie "/adapter: mysql/a \\  url: <%= ENV['MARIADB_URL'] %>" config/database.yml
-  sed -ie "/adapter: postgresql/a \\  url: <%= ENV['POSTGRES_URL'] %>" config/database.yml
+  sed -ie "/adapter: mysql/a \\ url: <%= ENV['MARIADB_URL'] %>" config/database.yml
+  sed -ie "/adapter: postgresql/a \\ url: <%= ENV['POSTGRES_URL'] %>" config/database.yml
   /usr/local/bin/docker-compose run app bundle install
   /usr/local/bin/docker-compose run app bundle exec rake db:setup
   /usr/local/bin/docker-compose run app bundle exec rake db:migrate
