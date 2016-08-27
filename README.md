@@ -27,7 +27,7 @@ VagrantでUbuntuを起動し、その中でDockerを稼働させています。
   - 例: `APP_NAME=hoge APP_DB=postgresql vagrant up`
   - この場合**'Hoge'**という名前の**postgresql**を使用するRailsアプリが作成されます。
   - `APP_NAME`を指定しなかった場合はディレクトリ名が使用されますが、cloneした時のままの名前(Rails-DE)だと**App**という名前になります。
-  - `APP_DB`には**mysql3 mariadb postgresql**の3つのうちいずれかを指定できます。デフォルトはmariadbです。
+  - `APP_DB`には**sqlite3 mariadb postgresql**の3つのうちいずれかを指定できます。デフォルトはmariadbです。
   - Redisを使用する予定が無い場合はこの時に先に`EXCLUDE_REDIS=true`を指定する事でRedis環境の構築を省略する事ができます。
   - 例: `EXCLUDE_REDIS=true vagrant up`
 * 自動で新しいRailsアプリが作成されます。
