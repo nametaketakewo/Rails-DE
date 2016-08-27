@@ -1,22 +1,23 @@
+---
 version: '2'
 services:
   bundle:
     image: vagrant_app
     volumes:
-      - /usr/local/bundle
+    - "/usr/local/bundle"
   app:
-    build: .
+    build: "."
     command: bundle exec rails s -p 3000 -b 0.0.0.0
     volumes:
-      - .:/app
+    - ".:/app"
     ports:
-      - 3000:3000
+    - 3000:3000
     volumes_from:
-      - bundle
+    - bundle
     links:
-      - mariadb
-      - postgres
-      - redis
+    - mariadb
+    - postgres
+    - redis
     environment:
       MARIADB_URL: mysql2://root@mariadb:3306
       POSTGRES_URL: postgres://postgres@postgres:5432
@@ -24,14 +25,14 @@ services:
   mariadb:
     image: mariadb
     ports:
-      - 3306:3306
+    - 3306:3306
     environment:
       MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
   postgres:
     image: postgres
     ports:
-      - 5432:5432
+    - 5432:5432
   redis:
     image: redis
     ports:
-      - 6379:6379
+    - 6379:6379
