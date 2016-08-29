@@ -104,7 +104,9 @@ Vagrant.configure(2) do |config|
   elif [ ! -f '/app/Gemfile' ] ; then
   echo 'source '\''https://rubygems.org'\''\n\ngem '\''rails'\'', '\''~> 5.0.0'\' > /app/Gemfile
   fi
+  grep "url: <%= ENV\['MARIADB_URL'\] %>" config/database.yml > /dev/null ||
   sed -ie "/adapter: mysql/a \\  url: <%= ENV['MARIADB_URL'] %>" config/database.yml
+  grep "url: <%= ENV\['POSTGRES_URL'\] %>" config/database.yml > /dev/null ||
   sed -ie "/adapter: postgresql/a \\  url: <%= ENV['POSTGRES_URL'] %>" config/database.yml
   /usr/local/bin/docker-compose run app bundle install
   /usr/local/bin/docker-compose run app bundle exec rake db:setup
