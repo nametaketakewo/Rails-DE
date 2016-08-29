@@ -42,8 +42,8 @@ Vagrant.configure(2) do |config|
     if File.exist?('app') && File.exist?('Gemfile')
       db_config = File.readlines('config/database.yml')
       adapters = db_config.grep(/adapter:/).map{|e| e.strip}
-      if adapters.include?('adapter: mysql') && adapters.include?('adapter: postgresql')
-      elsif adapters.include?('adapter: mysql')
+      if adapters.include?('adapter: mysql2') && adapters.include?('adapter: postgresql')
+      elsif adapters.include?('adapter: mysql2')
         file['services']['app']['links'].delete('postgres')
         file['services'].delete('postgres')
       elsif adapters.include?('adapter: postgresql')
