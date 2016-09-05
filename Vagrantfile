@@ -87,29 +87,25 @@ Vagrant.configure(2) do |config|
     open('docker-compose.yml',"w") do |f|
       YAML.dump(file,f)
     end
-    if open('Dockerfile') {|f| f.readlines[0]}.chomp.empty?
-      from = ''
-      if File.exist?('.ruby-version')
-        ruby_version = open('.ruby-version', &:read).chomp
-        irregular_processors = %w(jruby maglev mruby rbx ree rbx)
-        processor = ruby_version.split('-')
-        if irregular_processors.include?(processor)
-          from = 'FROM ruby:latest'
-        else
-          version = open('.ruby-version', &:read).split('.').map(&:to_i)
-          if version.length >= 2 && version[0] >= 2 && version[1] >= 3
-            from = "FROM ruby:#{ruby_version}"
-          else
-            from = 'FROM ruby:2.2.2'
-          end
-        end
+    from = ''
+    ruby_version = 'latest'
+    if File.exist?('.ruby-version')
+      irregular_processors = %w(jruby maglev mruby rbx ree rbx)
+      processor = open('.ruby-version', &:read).chomp.split('-')
+      if irregular_processors.include?(processor)
+        ruby_version = 'latest'
       else
-        from = 'FROM ruby:latest'
+        ruby_version = open('.ruby-version', &:read).split('.').map(&:to_i)
       end
-      dockerfile = open('Dockerfile', &:read).split("\n").shift.unshift(from)
-      open('Dockerfile','w') do |f|
-        f.puts dockerfile
+    end
+    if File.exist?('Gemfile')
+      gem_ruby =  open('Gemfile', &:read).split("\n").select {|f| f =~ /ruby\s'*'/}.each do |item|
+        ruby_version = item.split.at(1).delete('"').delete("'") unless item.strip[0] =='#'
       end
+    end
+    dockerfile = open('Dockerfile', &:read).split("\n").drop(1).unshift("FROM ruby:#{ruby_version}").join("\n")
+    open('Dockerfile','w') do |f|
+      f.puts dockerfile
     end
   rescue
   end
