@@ -87,29 +87,29 @@ Vagrant.configure(2) do |config|
     open('docker-compose.yml',"w") do |f|
       YAML.dump(file,f)
     end
-
-    from = ''
-    if File.exist?('.ruby-version')
-      ruby_version = open('.ruby-version', &:read).chomp
-      irregular_processors = %w(jruby maglev mruby rbx ree rbx)
-      processor = ruby_version.split('-')
-      if irregular_processors.include?(processor)
-        from = 'FROM ruby:latest'
-      else
-        version = open('.ruby-version', &:read).split('.').map(&:to_i)
-        if version.length >= 2 && version[0] >= 2 && version[1] >= 3
-          from = "FROM ruby:#{ruby_version}"
+    if open('Dockerfile') {|f| f.readlines[0]}.chomp.empty?
+      from = ''
+      if File.exist?('.ruby-version')
+        ruby_version = open('.ruby-version', &:read).chomp
+        irregular_processors = %w(jruby maglev mruby rbx ree rbx)
+        processor = ruby_version.split('-')
+        if irregular_processors.include?(processor)
+          from = 'FROM ruby:latest'
         else
-          from = 'FROM ruby:2.2.2'
+          version = open('.ruby-version', &:read).split('.').map(&:to_i)
+          if version.length >= 2 && version[0] >= 2 && version[1] >= 3
+            from = "FROM ruby:#{ruby_version}"
+          else
+            from = 'FROM ruby:2.2.2'
+          end
         end
+      else
+        from = 'FROM ruby:latest'
       end
-    else
-      from = 'FROM ruby:latest'
-    end
-    dockerfile = open('Dockerfile', &:read)
-    dockerfile = from + "\n" + dockerfile
-    open('Dockerfile','w') do |f|
-      f.puts dockerfile
+      dockerfile = open('Dockerfile', &:read).split("\n").shift.unshift(from)
+      open('Dockerfile','w') do |f|
+        f.puts dockerfile
+      end
     end
   rescue
   end
