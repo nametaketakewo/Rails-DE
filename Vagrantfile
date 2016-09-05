@@ -115,6 +115,7 @@ Vagrant.configure(2) do |config|
   cd /app
   /usr/local/bin/docker-compose build
   if [ ! -d '/app/app' ] && [ ! -f '/app/Gemfile' ]; then
+  rm -rf /app/README.md
   rm -rf /app/.git
   /usr/local/bin/docker-compose run app gem install rails
   /usr/local/bin/docker-compose run app rails new t/#{app_name} -d #{app_db}
